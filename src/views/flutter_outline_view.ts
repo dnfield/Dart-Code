@@ -34,12 +34,13 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidget
 	}
 
 	private update() {
-		if (!this.flutterOutline || !this.activeEditor || this.flutterOutline.file !== this.activeEditor.document.fileName)
+		if (!this.flutterOutline || !this.activeEditor || this.flutterOutline.file !== this.activeEditor.document.fileName || !this.flutterOutline.outline || !this.flutterOutline.outline.children || this.flutterOutline.outline.children.length === 0) {
+			FlutterOutlineProvider.hideTree();
 			return;
+		}
 
 		FlutterOutlineProvider.showTree();
-
-		// Do tree...
+		this.refresh();
 	}
 
 	private setTrackingFile(editor: vs.TextEditor) {
@@ -63,7 +64,15 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidget
 	}
 
 	public getChildren(element?: FlutterWidgetItem): FlutterWidgetItem[] {
-		return [];
+		if (!element) {
+			if (this.flutterOutline && this.flutterOutline.outline && this.flutterOutline.outline.children && this.flutterOutline.outline.length) {
+				return this.flutterOutline.outline.children.map((c) => new FlutterWidgetItem(c));
+			} else {
+				return [];
+			}
+		} else {
+			return element.outline.children.map((c) => new FlutterWidgetItem(c));
+		}
 	}
 
 	private static setTreeVisible(visible: boolean) {
@@ -81,12 +90,14 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidget
 
 class FlutterWidgetItem extends vs.TreeItem {
 	constructor(
-		public readonly label: string,
-		public readonly depPath: string,
-		public readonly collapsibleState?: vs.TreeItemCollapsibleState,
-		public readonly command?: vs.Command,
+		public readonly outline: as.FlutterOutline,
 	) {
-		super(label, collapsibleState);
+		super(
+			outline.label || outline.kind,
+			outline.children && outline.children.length
+				? vs.TreeItemCollapsibleState.Collapsed
+				: vs.TreeItemCollapsibleState.None,
+		);
 	}
 
 	public contextValue = "flutterWidget";
