@@ -142,10 +142,7 @@ class FlutterWidgetItem extends vs.TreeItem {
 }
 
 class FlutterWidgetAttributeItem extends vs.TreeItem {
-	constructor(
-		public readonly attribute: as.FlutterOutlineAttribute,
-		editor: vs.TextEditor,
-	) {
+	constructor(public readonly attribute: as.FlutterOutlineAttribute) {
 		super(attribute.name + ": " + attribute.label);
 	}
 }
