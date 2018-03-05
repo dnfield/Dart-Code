@@ -8,7 +8,7 @@ import { editor } from "../../test/helpers";
 
 const DART_SHOW_FLUTTER_OUTLINE = "dart-code:showFlutterOutline";
 
-export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidgetItem>, vs.Disposable {
+export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>, vs.Disposable {
 	private subscriptions: vs.Disposable[] = [];
 	private analyzer: Analyzer;
 	private activeEditor: vs.TextEditor;
@@ -64,16 +64,18 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidget
 		return element;
 	}
 
-	public getChildren(element?: FlutterWidgetItem): FlutterWidgetItem[] {
-		if (!element) {
-			if (this.flutterOutline && this.flutterOutline.outline && this.flutterOutline.outline.children && this.flutterOutline.outline.length) {
-				return this.flutterOutline.outline.children.map((c) => new FlutterWidgetItem(c, this.activeEditor));
-			} else {
-				return [];
-			}
-		} else {
-			return element.outline.children.map((c) => new FlutterWidgetItem(c, this.activeEditor));
+	public getChildren(element?: FlutterWidgetItem): vs.TreeItem[] {
+		const outline = element ? element.outline : this.flutterOutline ? this.flutterOutline.outline : null;
+		const children: vs.TreeItem[] = [];
+
+		if (outline) {
+			if (outline.children && outline.length)
+				outline.children.map((c) => new FlutterWidgetItem(c, this.activeEditor)).forEach((c) => children.push(c));
+			if (outline.attributes && outline.attributes.length)
+				outline.attributes.map((a) => new FlutterWidgetAttributeItem(a)).forEach((a) => children.push(a));
 		}
+
+		return children;
 	}
 
 	private static setTreeVisible(visible: boolean) {
@@ -96,7 +98,7 @@ class FlutterWidgetItem extends vs.TreeItem {
 	) {
 		super(
 			FlutterWidgetItem.getLabel(outline),
-			outline.children && outline.children.length
+			(outline.children && outline.children.length) || (outline.attributes && outline.attributes.length)
 				? vs.TreeItemCollapsibleState.Collapsed
 				: vs.TreeItemCollapsibleState.None,
 		);
@@ -116,25 +118,34 @@ class FlutterWidgetItem extends vs.TreeItem {
 	private static getLabel(outline: as.FlutterOutline): string {
 		let label = "";
 
-		if (outline.dartElement)
+		if (outline.dartElement) {
 			label += " " + outline.dartElement.name;
+			if (outline.dartElement.typeParameters)
+				label += outline.dartElement.typeParameters;
+			if (outline.dartElement.parameters)
+				label += outline.dartElement.parameters;
+			if (outline.dartElement.returnType)
+				label += " → " + outline.dartElement.returnType;
+		}
 
 		if (outline.variableName)
 			label += " " + outline.variableName;
 
+		if (outline.className)
+			label += " " + outline.className;
+
 		if (outline.label)
 			label += " " + outline.label;
 
-		if (outline.attributes) {
-			// According to
-			// https://github.com/flutter/flutter-intellij/blob/d2bc014be391575b610be1af9dc9308127ce3826/src/io/flutter/preview/PreviewView.java#L1063
-			// we can hide the attribute names for text/icon if it's the sole attribute
-			if (outline.attributes.length === 1 && (outline.attributes[0].name === "text" || outline.attributes[0].name === "icon"))
-				label += " " + outline.attributes[0].label;
-			else
-				label += " " + outline.attributes.map((a) => a.name + ": " + a.label).join(", ");
-		}
-
 		return label.trim();
+	}
+}
+
+class FlutterWidgetAttributeItem extends vs.TreeItem {
+	constructor(
+		public readonly attribute: as.FlutterOutlineAttribute,
+		editor: vs.TextEditor,
+	) {
+		super(attribute.name + ": " + attribute.label);
 	}
 }
