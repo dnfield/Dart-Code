@@ -1623,6 +1623,44 @@ export interface KytheGetKytheEntriesResponse {
 }
 
 /**
+ * Subscribe for services that are specific to individual files.
+ * All previous subscriptions are replaced by the current set of
+ * subscriptions. If a given service is not included as a key in the map
+ * then no files will be subscribed to the service, exactly as if the
+ * service had been included in the map with an explicit empty list of
+ * files.
+ * 
+ * Note that this request determines the set of requested
+ * subscriptions. The actual set of subscriptions at any given
+ * time is the intersection of this set with the set of files
+ * currently subject to analysis. The files currently subject
+ * to analysis are the set of files contained within an actual
+ * analysis root but not excluded, plus all of the files
+ * transitively reachable from those files via import, export
+ * and part directives. (See analysis.setAnalysisRoots for an
+ * explanation of how the actual analysis roots are
+ * determined.) When the actual analysis roots change, the
+ * actual set of subscriptions is automatically updated, but
+ * the set of requested subscriptions is unchanged.
+ * 
+ * If a requested subscription is a directory it is ignored,
+ * but remains in the set of requested subscriptions so that if
+ * it later becomes a file it can be included in the set of
+ * actual subscriptions.
+ * 
+ * It is an error if any of the keys in the map are not valid
+ * services. If there is an error, then the existing
+ * subscriptions will remain unchanged.
+ */
+export interface FlutterSetSubscriptionsRequest {
+	/**
+	 * A table mapping services to a list of the files being
+	 * subscribed to the service.
+	 */
+	subscriptions: { [key: string]: FilePath[]; };
+}
+
+/**
  * Reports that the server is running. This notification is
  * issued once after the server has started running but before
  * any requests are processed to let the client know that it
@@ -2113,6 +2151,33 @@ export interface ExecutionLaunchDataNotification {
 }
 
 /**
+ * Reports the Flutter outline associated with a single file.
+ * 
+ * This notification is not subscribed to by default. Clients
+ * can subscribe by including the value "OUTLINE" in
+ * the list of services passed in an flutter.setSubscriptions
+ * request.
+ */
+export interface FlutterOutlineNotification {
+	/**
+	 * The file with which the outline is associated.
+	 */
+	file: FilePath;
+
+	/**
+	 * The outline associated with the file.
+	 */
+	outline: FlutterOutline;
+
+	/**
+	 * If the file has Flutter widgets that can be rendered, the list
+	 * of edits that should be applied to the file to instrument widgets and
+	 * associate them with outline nodes.
+	 */
+	instrumentationEdits: SourceEdit[];
+}
+
+/**
  * A list of fixes associated with a specific error.
  */
 export interface AnalysisErrorFixes {
@@ -2390,6 +2455,155 @@ export type ExecutionService =
 export type FileKind =
 	"LIBRARY"
 	| "PART";
+
+/**
+ * An enumeration of the services provided by the flutter domain that
+ * are related to a specific list of files.
+ */
+export type FlutterService =
+	"OUTLINE";
+
+/**
+ * An node in the Flutter specific outline structure of a file.
+ */
+export interface FlutterOutline {
+	/**
+	 * The kind of the node.
+	 */
+	kind: FlutterOutlineKind;
+
+	/**
+	 * The offset of the first character of the element. This is different
+	 * than the offset in the Element, which is the offset of the name of the
+	 * element. It can be used, for example, to map locations in the file
+	 * back to an outline.
+	 */
+	offset: number;
+
+	/**
+	 * The length of the element.
+	 */
+	length: number;
+
+	/**
+	 * The text label of the node children of the node.
+	 * It is provided for any FlutterOutlineKind.GENERIC node,
+	 * where better information is not available.
+	 */
+	label?: string;
+
+	/**
+	 * If this node is a Dart element, the description of it; omitted
+	 * otherwise.
+	 */
+	dartElement?: Element;
+
+	/**
+	 * Additional attributes for this node, which might be interesting
+	 * to display on the client. These attributes are usually arguments
+	 * for the instance creation or the invocation that created the widget.
+	 */
+	attributes?: FlutterOutlineAttribute[];
+
+	/**
+	 * If the node creates a new class instance, or a reference to an
+	 * instance, this field has the name of the class.
+	 */
+	className?: string;
+
+	/**
+	 * A short text description how this node is associated with the parent
+	 * node. For example "appBar" or "body" in Scaffold.
+	 */
+	parentAssociationLabel?: string;
+
+	/**
+	 * If FlutterOutlineKind.VARIABLE, the name of the variable.
+	 */
+	variableName?: string;
+
+	/**
+	 * The children of the node. The field will be omitted if the node has no
+	 * children.
+	 */
+	children?: FlutterOutline[];
+
+	/**
+	 * If the node is a widget, and it is instrumented, the unique identifier
+	 * of this widget, that can be used to associate rendering information
+	 * with this node.
+	 */
+	id?: number;
+
+	/**
+	 * If the node is a widget class that can be rendered for IDE, the name
+	 * of the constructor that should be used to instantiate the widget.
+	 * Empty string for default constructor. Absent if the node is not a
+	 * widget class that can be rendered.
+	 */
+	renderConstructor?: string;
+
+	/**
+	 * If the node is a StatefulWidget that can be rendered, and its State
+	 * class is defined in the same file, the offset of the State class code
+	 * in the file.
+	 */
+	stateOffset?: number;
+
+	/**
+	 * If the node is a StatefulWidget that can be rendered, and its State
+	 * class is defined in the same file, the length of the State class code
+	 * in the file.
+	 */
+	stateLength?: number;
+}
+
+/**
+ * An attribute for a FlutterOutline.
+ */
+export interface FlutterOutlineAttribute {
+	/**
+	 * The name of the attribute.
+	 */
+	name: string;
+
+	/**
+	 * The label of the attribute value, usually the Dart code.
+	 * It might be quite long, the client should abbreviate as needed.
+	 */
+	label: string;
+
+	/**
+	 * The boolean literal value of the attribute.
+	 * This field is absent if the value is not a boolean literal.
+	 */
+	literalValueBoolean?: boolean;
+
+	/**
+	 * The integer literal value of the attribute.
+	 * This field is absent if the value is not an integer literal.
+	 */
+	literalValueInteger?: number;
+
+	/**
+	 * The string literal value of the attribute.
+	 * This field is absent if the value is not a string literal.
+	 */
+	literalValueString?: string;
+}
+
+/**
+ * An enumeration of the kinds of FlutterOutline elements. The list of kinds
+ * might be expanded with time, clients must be able to handle new kinds
+ * in some general way.
+ */
+export type FlutterOutlineKind =
+	"DART_ELEMENT"
+	| "GENERIC"
+	| "NEW_INSTANCE"
+	| "INVOCATION"
+	| "VARIABLE"
+	| "PLACEHOLDER";
 
 /**
  * An enumeration of the services provided by the analysis domain that are

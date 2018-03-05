@@ -30,6 +30,7 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 	private completionResultsSubscriptions: ((notification: as.CompletionResultsNotification) => void)[] = [];
 	private searchResultsSubscriptions: ((notification: as.SearchResultsNotification) => void)[] = [];
 	private executionLaunchDataSubscriptions: ((notification: as.ExecutionLaunchDataNotification) => void)[] = [];
+	private flutterOutlineSubscriptions: ((notification: as.FlutterOutlineNotification) => void)[] = [];
 
 	protected handleNotification(evt: UnknownNotification) {
 		switch (evt.event) {
@@ -86,6 +87,9 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 				break;
 			case "execution.launchData":
 				this.notify(this.executionLaunchDataSubscriptions, <as.ExecutionLaunchDataNotification>evt.params);
+				break;
+			case "flutter.outline":
+				this.notify(this.flutterOutlineSubscriptions, <as.FlutterOutlineNotification>evt.params);
 				break;
 		}
 	}
@@ -299,6 +303,17 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 	*/
 	registerForExecutionLaunchData(subscriber: (notification: as.ExecutionLaunchDataNotification) => void): vs.Disposable {
 		return this.subscribe(this.executionLaunchDataSubscriptions, subscriber);
+	}
+
+	/**
+	Reports the Flutter outline associated with a single file.
+	This notification is not subscribed to by default. Clients
+	can subscribe by including the value "OUTLINE" in
+	the list of services passed in an flutter.setSubscriptions
+	request.
+	*/
+	registerForFlutterOutline(subscriber: (notification: as.FlutterOutlineNotification) => void): vs.Disposable {
+		return this.subscribe(this.flutterOutlineSubscriptions, subscriber);
 	}
 
 	/**
@@ -760,7 +775,8 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 	Organizes all of the directives - removes unused imports and sorts
 	directives of the given Dart file according to the
 	Dart Style
-	Guide.
+	Guide
+	.
 	If a request is made for a file that does not exist, does not belong
 	to an analysis root or is not a Dart file,
 	FILE_NOT_ANALYZED will be generated.
@@ -855,10 +871,11 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 	The value of this flag can be changed by other tools outside of the
 	analysis server's process. When you query the flag, you get the value of
 	the flag at a given moment. Clients should not use the value returned to
-	decide whether or not to send the sendEvent and sendTiming
-	requests. Those requests should be used unconditionally and server will
-	determine whether or not it is appropriate to forward the information to
-	the cloud at the time each request is received.
+	decide whether or not to send the sendEvent and
+	sendTiming requests. Those requests should be used
+	unconditionally and server will determine whether or not it is appropriate
+	to forward the information to the cloud at the time each request is
+	received.
 	*/
 	analyticsIsEnabled(): Thenable<as.AnalyticsIsEnabledResponse> {
 		return this.sendRequest("analytics.isEnabled");
@@ -906,5 +923,48 @@ export abstract class AnalyzerGen extends StdIOService<UnknownNotification> {
 	*/
 	analyticsSendTiming(request: as.AnalyticsSendTimingRequest): Thenable<UnknownResponse> {
 		return this.sendRequest("analytics.sendTiming", request);
+	}
+
+	/**
+	Return the list of KytheEntry objects for some file, given the
+	current state of the file system populated by "analysis.updateContent".
+	If a request is made for a file that does not exist, or that is not
+	currently subject to analysis (e.g. because it is not associated with any
+	analysis root specified to analysis.setAnalysisRoots), an error of type
+	GET_KYTHE_ENTRIES_INVALID_FILE will be generated.
+	*/
+	kytheGetKytheEntries(request: as.KytheGetKytheEntriesRequest): Thenable<as.KytheGetKytheEntriesResponse> {
+		return this.sendRequest("kythe.getKytheEntries", request);
+	}
+
+	/**
+	Subscribe for services that are specific to individual files.
+	All previous subscriptions are replaced by the current set of
+	subscriptions. If a given service is not included as a key in the map
+	then no files will be subscribed to the service, exactly as if the
+	service had been included in the map with an explicit empty list of
+	files.
+	Note that this request determines the set of requested
+	subscriptions. The actual set of subscriptions at any given
+	time is the intersection of this set with the set of files
+	currently subject to analysis. The files currently subject
+	to analysis are the set of files contained within an actual
+	analysis root but not excluded, plus all of the files
+	transitively reachable from those files via import, export
+	and part directives. (See analysis.setAnalysisRoots for an
+	explanation of how the actual analysis roots are
+	determined.) When the actual analysis roots change, the
+	actual set of subscriptions is automatically updated, but
+	the set of requested subscriptions is unchanged.
+	If a requested subscription is a directory it is ignored,
+	but remains in the set of requested subscriptions so that if
+	it later becomes a file it can be included in the set of
+	actual subscriptions.
+	It is an error if any of the keys in the map are not valid
+	services. If there is an error, then the existing
+	subscriptions will remain unchanged.
+	*/
+	flutterSetSubscriptions(request: as.FlutterSetSubscriptionsRequest): Thenable<UnknownResponse> {
+		return this.sendRequest("flutter.setSubscriptions", request);
 	}
 }
