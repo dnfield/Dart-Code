@@ -357,6 +357,12 @@
 					"when": "resourceFilename == pubspec.yaml && dart-code:flutterProjectLoaded",
 					"command": "flutter.packages.upgrade"
 				}
+			],
+			"view/item/context": [
+				// {
+				// 	"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor--.*/",
+				// 	"command": "pub.get"
+				// }
 			]
 		},
 		"views": {

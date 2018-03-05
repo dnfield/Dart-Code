@@ -1,12 +1,14 @@
 "use strict";
 
 import * as vs from "vscode";
+import * as path from "path";
 import * as as from "../analysis/analysis_server_types";
 import { Analyzer } from "../analysis/analyzer";
 import { isAnalyzable } from "../utils";
 import { editor } from "../../test/helpers";
 
 const DART_SHOW_FLUTTER_OUTLINE = "dart-code:showFlutterOutline";
+const DART_IS_WIDGET = "dart-code:isWidget";
 
 export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>, vs.Disposable {
 	private subscriptions: vs.Disposable[] = [];
@@ -64,13 +66,23 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 		return element;
 	}
 
-	public getChildren(element?: FlutterWidgetItem): vs.TreeItem[] {
+	public async getChildren(element?: FlutterWidgetItem): Promise<vs.TreeItem[]> {
 		const outline = element ? element.outline : this.flutterOutline ? this.flutterOutline.outline : null;
 		const children: vs.TreeItem[] = [];
 
 		if (outline) {
-			if (outline.children && outline.length)
-				outline.children.map((c) => new FlutterWidgetItem(c, this.activeEditor)).forEach((c) => children.push(c));
+			if (outline.children && outline.length) {
+				for (const c of outline.children) {
+					const pos = this.activeEditor.document.positionAt(c.offset);
+					const range = new vs.Range(pos, pos);
+					const fixes = (await vs.commands.executeCommand(
+						"vscode.executeCodeActionProvider",
+						this.activeEditor.document.uri,
+						range,
+					)) as Array<vs.Command | vs.CodeAction>;
+					children.push(new FlutterWidgetItem(c, fixes, this.activeEditor));
+				}
+			}
 			if (outline.attributes && outline.attributes.length)
 				outline.attributes.map((a) => new FlutterWidgetAttributeItem(a)).forEach((a) => children.push(a));
 		}
@@ -94,6 +106,7 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 class FlutterWidgetItem extends vs.TreeItem {
 	constructor(
 		public readonly outline: as.FlutterOutline,
+		private readonly fixes: Array<vs.Command | vs.CodeAction>,
 		editor: vs.TextEditor,
 	) {
 		super(
@@ -111,9 +124,17 @@ class FlutterWidgetItem extends vs.TreeItem {
 			command: "revealLine",
 			title: "",
 		};
-	}
 
-	public contextValue = "flutterWidget";
+		// Create a context value that is each item with a pipe at each side.
+		const refactorData = this
+			.fixes
+			.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
+			.filter((ca) => ca.kind && ca.kind.value)
+			.map((ca) => ca.kind.value)
+			.join("--");
+		// So we can search by --ID--
+		this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--.dart";
+	}
 
 	private static getLabel(outline: as.FlutterOutline): string {
 		let label = "";
