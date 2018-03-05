@@ -54,5 +54,13 @@ export class OpenFileTracker {
 				},
 			});
 		}
+
+		if (this.analyzer.capabilities.supportsFlutterOutline) {
+			this.analyzer.flutterSetSubscriptions({
+				subscriptions: {
+					OUTLINE: priorityFiles,
+				},
+			});
+		}
 	}
 }

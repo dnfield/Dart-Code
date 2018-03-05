@@ -1,46 +1,46 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as util from "./utils";
 import * as vs from "vscode";
-import { WorkspaceFolder } from "vscode";
-import { ServerStatusNotification } from "./analysis/analysis_server_types";
-import { Analyzer } from "./analysis/analyzer";
 import { Analytics } from "./analytics";
+import { Analyzer } from "./analysis/analyzer";
 import { AnalyzerStatusReporter } from "./analysis/analyzer_status_reporter";
-import { DebugCommands } from "./commands/debug";
-import { EditCommands } from "./commands/edit";
-import { SdkCommands } from "./commands/sdk";
-import { TypeHierarchyCommand } from "./commands/type_hierarchy";
-import { config } from "./config";
-import { ClosingLabelsDecorations } from "./decorations/closing_labels_decorations";
-import { FileChangeHandler } from "./analysis/file_change_handler";
-import { FlutterDaemon } from "./flutter/flutter_daemon";
-import { OpenFileTracker } from "./analysis/open_file_tracker";
-import { upgradeProject } from "./project_upgrade";
 import { AssistCodeActionProvider } from "./providers/assist_code_action_provider";
+import { checkForProjectsInSubFolders } from "./project";
+import { ClosingLabelsDecorations } from "./decorations/closing_labels_decorations";
+import { config } from "./config";
 import { DartCompletionItemProvider } from "./providers/dart_completion_item_provider";
 import { DartDefinitionProvider } from "./providers/dart_definition_provider";
 import { DartDiagnosticProvider } from "./providers/dart_diagnostic_provider";
-import { DartFormattingEditProvider } from "./providers/dart_formatting_edit_provider";
 import { DartDocumentHighlightProvider } from "./providers/dart_highlighting_provider";
+import { DartFormattingEditProvider } from "./providers/dart_formatting_edit_provider";
 import { DartHoverProvider } from "./providers/dart_hover_provider";
 import { DartLanguageConfiguration } from "./providers/dart_language_configuration";
+import { DartPackagesProvider } from "./views/packages_view";
 import { DartReferenceProvider } from "./providers/dart_reference_provider";
 import { DartRenameProvider } from "./providers/dart_rename_provider";
-import { DartTypeFormattingEditProvider } from "./providers/dart_type_formatting_edit_provider";
 import { DartSymbolProvider } from "./providers/dart_symbol_provider";
+import { DartTypeFormattingEditProvider } from "./providers/dart_type_formatting_edit_provider";
+import { DebugCommands } from "./commands/debug";
 import { DebugConfigProvider } from "./providers/debug_config_provider";
+import { EditCommands } from "./commands/edit";
+import { FileChangeHandler } from "./analysis/file_change_handler";
 import { FixCodeActionProvider } from "./providers/fix_code_action_provider";
+import { FlutterDaemon } from "./flutter/flutter_daemon";
+import { FlutterOutlineProvider } from "./views/flutter_outline_view";
+import { isPubGetProbablyRequired, promptToRunPubGet } from "./pub/pub";
 import { LegacyDartDocumentSymbolProvider } from "./providers/legacy_dart_document_symbol_provider";
 import { LegacyDartWorkspaceSymbolProvider } from "./providers/legacy_dart_workspace_symbol_provider";
-import { SnippetCompletionItemProvider } from "./providers/snippet_completion_item_provider";
-import { isPubGetProbablyRequired, promptToRunPubGet } from "./pub/pub";
-import { showUserPrompts } from "./user_prompts";
-import { isFlutterWorkspaceFolder } from "./utils";
-import * as util from "./utils";
-import { DartPackagesProvider } from "./views/packages_view";
+import { OpenFileTracker } from "./analysis/open_file_tracker";
 import { PromiseCompleter } from "./debug/utils";
+import { SdkCommands } from "./commands/sdk";
+import { ServerStatusNotification } from "./analysis/analysis_server_types";
+import { showUserPrompts } from "./user_prompts";
+import { SnippetCompletionItemProvider } from "./providers/snippet_completion_item_provider";
 import { StatusBarVersionTracker } from "./sdk/status_bar_version_tracker";
-import { checkForProjectsInSubFolders } from "./project";
+import { TypeHierarchyCommand } from "./commands/type_hierarchy";
+import { upgradeProject } from "./project_upgrade";
+import { WorkspaceFolder } from "vscode";
 
 const DART_MODE: vs.DocumentFilter[] = [{ language: "dart", scheme: "file" }];
 const HTML_MODE: vs.DocumentFilter[] = [{ language: "html", scheme: "file" }];
@@ -206,7 +206,7 @@ export function activate(context: vs.ExtensionContext, isRestart: boolean = fals
 
 	// Snippets are language-specific
 	context.subscriptions.push(vs.languages.registerCompletionItemProvider(DART_MODE, new SnippetCompletionItemProvider("snippets/dart.json", (_) => true)));
-	context.subscriptions.push(vs.languages.registerCompletionItemProvider(DART_MODE, new SnippetCompletionItemProvider("snippets/flutter.json", (uri) => isFlutterWorkspaceFolder(vs.workspace.getWorkspaceFolder(uri)))));
+	context.subscriptions.push(vs.languages.registerCompletionItemProvider(DART_MODE, new SnippetCompletionItemProvider("snippets/flutter.json", (uri) => util.isFlutterWorkspaceFolder(vs.workspace.getWorkspaceFolder(uri)))));
 
 	context.subscriptions.push(vs.languages.setLanguageConfiguration(DART_MODE[0].language, new DartLanguageConfiguration()));
 	const statusReporter = new AnalyzerStatusReporter(analyzer, sdks, analytics);
@@ -287,6 +287,9 @@ export function activate(context: vs.ExtensionContext, isRestart: boolean = fals
 			context.subscriptions.push(vs.languages.registerDocumentSymbolProvider(filter, documentSymbolProvider));
 		});
 
+		if (analyzer.capabilities.supportsFlutterOutline)
+			context.subscriptions.push(vs.window.registerTreeDataProvider("dartFlutterOutline", new FlutterOutlineProvider(analyzer)));
+
 		// Hook open/active file changes so we can set priority files with the analyzer.
 		const openFileTracker = new OpenFileTracker(analyzer);
 		context.subscriptions.push(vs.workspace.onDidOpenTextDocument((td) => openFileTracker.updatePriorityFiles()));
@@ -317,7 +320,7 @@ export function activate(context: vs.ExtensionContext, isRestart: boolean = fals
 	// Register misc commands.
 	context.subscriptions.push(new TypeHierarchyCommand(context, analyzer));
 
-	// Register our view providers.
+	// Register our dependency tree provider.
 	const dartPackagesProvider = new DartPackagesProvider();
 	dartPackagesProvider.setWorkspaces(util.getDartWorkspaceFolders());
 	context.subscriptions.push(dartPackagesProvider);
