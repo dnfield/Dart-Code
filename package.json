@@ -359,10 +359,10 @@
 				}
 			],
 			"view/item/context": [
-				// {
-				// 	"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor--.*/",
-				// 	"command": "pub.get"
-				// }
+				{
+					"when": "false && view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor--.*/",
+					"command": "pub.get"
+				}
 			]
 		},
 		"views": {
