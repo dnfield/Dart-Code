@@ -3,20 +3,20 @@
 import * as vs from "vscode";
 import { FlutterWidgetItem } from "../views/flutter_outline_view";
 
+export const flutterOutlineCommands = [
+	"refactor.flutter.wrap.center",
+	"refactor.flutter.wrap.padding",
+	"refactor.flutter.wrap.column",
+	"refactor.flutter.move.up",
+	"refactor.flutter.move.down",
+	"refactor.flutter.removeWidget",
+];
+
 export class FlutterOutlineCommands {
 	constructor(context: vs.ExtensionContext) {
-		const flutterOutlineCommands = [
-			"_flutter.outline.refactor.flutter.wrap.center",
-			"_flutter.outline.refactor.flutter.wrap.padding",
-			"_flutter.outline.refactor.flutter.wrap.column",
-			"_flutter.outline.refactor.flutter.move.up",
-			"_flutter.outline.refactor.flutter.move.down",
-			"_flutter.outline.refactor.flutter.removeWidget",
-		];
-		for (const cmd of flutterOutlineCommands) {
-			const refactorId = cmd.replace("_flutter.outline.", "");
+		for (const id of flutterOutlineCommands) {
 			context.subscriptions.push(
-				vs.commands.registerCommand(cmd, (treeItem) => this.applyRefactoring(treeItem, refactorId)),
+				vs.commands.registerCommand("_flutter.outline." + id, (treeItem) => this.applyRefactoring(treeItem, id)),
 			);
 		}
 	}

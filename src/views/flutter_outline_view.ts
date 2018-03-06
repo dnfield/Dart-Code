@@ -6,6 +6,7 @@ import * as as from "../analysis/analysis_server_types";
 import { Analyzer } from "../analysis/analyzer";
 import { isAnalyzable } from "../utils";
 import { editor } from "../../test/helpers";
+import { flutterOutlineCommands } from "../commands/flutter_outline";
 
 const DART_SHOW_FLUTTER_OUTLINE = "dart-code:showFlutterOutline";
 const DART_IS_WIDGET = "dart-code:isWidget";
@@ -133,9 +134,12 @@ export class FlutterWidgetItem extends vs.TreeItem {
 		const refactorData = this
 			.fixes
 			.map((ca) => ca.kind.value)
+			.filter((c) => flutterOutlineCommands.indexOf(c) !== -1)
 			.join("--");
-		// So we can search by --ID--
-		this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--.dart";
+		if (refactorData) {
+			// So we can search by --ID--
+			this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--.dart";
+		}
 	}
 
 	private static getLabel(outline: as.FlutterOutline): string {
