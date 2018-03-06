@@ -27,6 +27,7 @@ import { EditCommands } from "./commands/edit";
 import { FileChangeHandler } from "./analysis/file_change_handler";
 import { FixCodeActionProvider } from "./providers/fix_code_action_provider";
 import { FlutterDaemon } from "./flutter/flutter_daemon";
+import { FlutterOutlineCommands } from "./commands/flutter_outline";
 import { FlutterOutlineProvider } from "./views/flutter_outline_view";
 import { isPubGetProbablyRequired, promptToRunPubGet } from "./pub/pub";
 import { LegacyDartDocumentSymbolProvider } from "./providers/legacy_dart_document_symbol_provider";
@@ -313,6 +314,7 @@ export function activate(context: vs.ExtensionContext, isRestart: boolean = fals
 	// Register SDK commands.
 	const sdkCommands = new SdkCommands(context, sdks, analytics);
 	const debugCommands = new DebugCommands(context, analytics);
+	const flutterOutlineCommands = new FlutterOutlineCommands(context);
 
 	// Set up commands for Dart editors.
 	context.subscriptions.push(new EditCommands(context, analyzer));

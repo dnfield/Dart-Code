@@ -80,7 +80,11 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 						this.activeEditor.document.uri,
 						range,
 					)) as Array<vs.Command | vs.CodeAction>;
-					children.push(new FlutterWidgetItem(c, fixes, this.activeEditor));
+					const codeActionFixes =
+						fixes
+							.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
+							.filter((ca) => ca.kind && ca.kind.value);
+					children.push(new FlutterWidgetItem(c, codeActionFixes, this.activeEditor));
 				}
 			}
 			if (outline.attributes && outline.attributes.length)
@@ -103,10 +107,10 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 	}
 }
 
-class FlutterWidgetItem extends vs.TreeItem {
+export class FlutterWidgetItem extends vs.TreeItem {
 	constructor(
 		public readonly outline: as.FlutterOutline,
-		private readonly fixes: Array<vs.Command | vs.CodeAction>,
+		public readonly fixes: vs.CodeAction[],
 		editor: vs.TextEditor,
 	) {
 		super(
@@ -128,8 +132,6 @@ class FlutterWidgetItem extends vs.TreeItem {
 		// Create a context value that is each item with a pipe at each side.
 		const refactorData = this
 			.fixes
-			.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
-			.filter((ca) => ca.kind && ca.kind.value)
 			.map((ca) => ca.kind.value)
 			.join("--");
 		// So we can search by --ID--

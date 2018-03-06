@@ -200,6 +200,41 @@
 				"command": "flutter.changeDevice",
 				"title": "Change Device",
 				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.wrap.center",
+				"title": "Wrap with Center",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.wrap.padding",
+				"title": "Wrap with Padding",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.wrap.column",
+				"title": "Wrap with Column",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.wrap.row",
+				"title": "Wrap with Row",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.move.up",
+				"title": "Move widget Up",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.move.down",
+				"title": "Move widget Down",
+				"category": "Flutter"
+			},
+			{
+				"command": "_flutter.outline.refactor.flutter.removeWidget",
+				"title": "Remove widget",
+				"category": "Flutter"
 			}
 		],
 		"keybindings": [
@@ -306,6 +341,30 @@
 				{
 					"command": "flutter.changeDevice",
 					"when": "dart-code:flutterProjectLoaded"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.wrap.center"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.wrap.padding"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.wrap.column"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.move.up"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.move.down"
+				},
+				{
+					"when": "false",
+					"command": "_flutter.outline.refactor.flutter.removeWidget"
 				}
 			],
 			"editor/title": [
@@ -360,8 +419,28 @@
 			],
 			"view/item/context": [
 				{
-					"when": "false && view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor--.*/",
-					"command": "pub.get"
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.center--.*/",
+					"command": "_flutter.outline.refactor.flutter.wrap.center"
+				},
+				{
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.padding--.*/",
+					"command": "_flutter.outline.refactor.flutter.wrap.padding"
+				},
+				{
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.column--.*/",
+					"command": "_flutter.outline.refactor.flutter.wrap.column"
+				},
+				{
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.move.up--.*/",
+					"command": "_flutter.outline.refactor.flutter.move.up"
+				},
+				{
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.move.down--.*/",
+					"command": "_flutter.outline.refactor.flutter.move.down"
+				},
+				{
+					"when": "&& view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.removeWidget--.*/",
+					"command": "_flutter.outline.refactor.flutter.removeWidget"
 				}
 			]
 		},
