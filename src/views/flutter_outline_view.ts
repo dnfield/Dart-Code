@@ -71,22 +71,26 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 	public async getChildren(element?: FlutterWidgetItem): Promise<vs.TreeItem[]> {
 		const outline = element ? element.outline : this.flutterOutline ? this.flutterOutline.outline : null;
 		const children: vs.TreeItem[] = [];
+		const editor = this.activeEditor;
 
 		if (outline) {
 			if (outline.children && outline.length) {
 				for (const c of outline.children) {
-					const pos = this.activeEditor.document.positionAt(c.offset);
+					const pos = editor.document.positionAt(c.offset);
 					const range = new vs.Range(pos, pos);
 					const fixes = (await vs.commands.executeCommand(
 						"vscode.executeCodeActionProvider",
-						this.activeEditor.document.uri,
+						editor.document.uri,
 						range,
 					)) as Array<vs.Command | vs.CodeAction>;
-					const codeActionFixes =
-						fixes
-							.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
-							.filter((ca) => ca.kind && ca.kind.value);
-					children.push(new FlutterWidgetItem(c, codeActionFixes, this.activeEditor));
+					// Ensure we're still active editor before trying to use.
+					if (editor && editor.document && !editor.document.isClosed) {
+						const codeActionFixes =
+							fixes
+								.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
+								.filter((ca) => ca.kind && ca.kind.value);
+						children.push(new FlutterWidgetItem(c, codeActionFixes, editor));
+					}
 				}
 			}
 		}
