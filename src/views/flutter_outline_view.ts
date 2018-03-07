@@ -89,8 +89,6 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 					children.push(new FlutterWidgetItem(c, codeActionFixes, this.activeEditor));
 				}
 			}
-			if (outline.attributes && outline.attributes.length)
-				outline.attributes.map((a) => new FlutterWidgetAttributeItem(a)).forEach((a) => children.push(a));
 		}
 
 		return children;
@@ -117,7 +115,7 @@ export class FlutterWidgetItem extends vs.TreeItem {
 	) {
 		super(
 			FlutterWidgetItem.getLabel(outline),
-			(outline.children && outline.children.length) || (outline.attributes && outline.attributes.length)
+			(outline.children && outline.children.length)
 				? vs.TreeItemCollapsibleState.Collapsed
 				: vs.TreeItemCollapsibleState.None,
 		);
@@ -170,11 +168,5 @@ export class FlutterWidgetItem extends vs.TreeItem {
 			label += " " + outline.label;
 
 		return label.trim();
-	}
-}
-
-class FlutterWidgetAttributeItem extends vs.TreeItem {
-	constructor(public readonly attribute: as.FlutterOutlineAttribute) {
-		super(attribute.name + ": " + attribute.label);
 	}
 }
