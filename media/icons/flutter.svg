@@ -1,0 +1,41 @@
+<svg width="252.5" height="252.5" xmlns="http://www.w3.org/2000/svg">
+ <metadata id="metadata8">image/svg+xml</metadata>
+ <defs>
+  <clipPath clipPathUnits="userSpaceOnUse" id="clipPath32">
+   <path d="m0,202l202,0l0,-202l-202,0l0,202z" id="path34"/>
+  </clipPath>
+  <clipPath clipPathUnits="userSpaceOnUse" id="clipPath40">
+   <path d="m95.5131,59.1852l41.3499,0l0,-27.8766l-41.3499,0l0,27.8766z" id="path42"/>
+  </clipPath>
+  <clipPath clipPathUnits="userSpaceOnUse" id="clipPath44">
+   <path d="m95.513,31.309l41.35,14.316l-13.473,13.56l-27.877,-27.876z" id="path46"/>
+  </clipPath>
+  <clipPath clipPathUnits="userSpaceOnUse" id="clipPath78">
+   <path d="m95.5154,59.1852l34.4836,0l0,-34.4847l-34.4836,0l0,34.4847z" id="path80"/>
+  </clipPath>
+  <clipPath clipPathUnits="userSpaceOnUse" id="clipPath82">
+   <path d="m123.39,59.185l-27.875,-27.876l6.609,-6.609l27.875,27.876l-6.609,6.609z" id="path84"/>
+  </clipPath>
+ </defs>
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="402" width="582" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g id="g10" transform="matrix(1.25,0,0,-1.25,0,252.5) ">
+   <g id="g12">
+    <path fill="#54c5f8" fill-rule="nonzero" d="m53.701,73.122002l-27.877,27.877l90.601,90.599l55.75,-0.001l-118.474,-118.475z" id="path14"/>
+   </g>
+   <g id="g16">
+    <path fill="#01579b" fill-rule="nonzero" d="m95.515404,31.308701l20.907,-20.907l55.747,0l0.004,0l-48.782,48.782l-27.876,-27.875z" id="path18"/>
+   </g>
+   <g id="g20">
+    <path fill="#54c5f8" fill-rule="nonzero" d="m172.175003,107.9673l-0.006,-0.001l0,0.001l-55.746,0l-20.908,-20.907l27.876,-27.876l48.784,48.783z" id="path22"/>
+   </g>
+   <g id="g24">
+    <path fill="#29b6f6" fill-rule="nonzero" d="m95.514999,87.059799l-27.875,-27.876l27.875,-27.875l27.876,27.875l-27.876,27.876z" id="path26"/>
+   </g>
+  </g>
+ </g>
+</svg>

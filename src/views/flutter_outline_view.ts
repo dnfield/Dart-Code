@@ -7,6 +7,7 @@ import { Analyzer } from "../analysis/analyzer";
 import { isAnalyzable } from "../utils";
 import { editor } from "../../test/helpers";
 import { flutterOutlineCommands } from "../commands/flutter_outline";
+import { extensionPath } from "../extension";
 
 const DART_SHOW_FLUTTER_OUTLINE = "dart-code:showFlutterOutline";
 const DART_IS_WIDGET = "dart-code:isWidget";
@@ -120,6 +121,10 @@ export class FlutterWidgetItem extends vs.TreeItem {
 				? vs.TreeItemCollapsibleState.Collapsed
 				: vs.TreeItemCollapsibleState.None,
 		);
+
+		if (outline.kind !== "DART_ELEMENT") {
+			this.iconPath = path.join(extensionPath, "media/icons/flutter.svg");
+		}
 
 		this.command = {
 			arguments: [{
