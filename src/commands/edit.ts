@@ -16,7 +16,15 @@ export class EditCommands implements vs.Disposable {
 			vs.commands.registerTextEditorCommand("dart.organizeDirectives", this.organizeDirectives, this),
 			vs.commands.registerTextEditorCommand("dart.sortMembers", this.sortMembers, this),
 			vs.commands.registerCommand("_dart.applySourceChange", this.applyEdits, this),
+			vs.commands.registerCommand("_dart.highlightRange", this.highlightRange, this),
 		);
+	}
+
+	private highlightRange(editor: vs.TextEditor, range: vs.Range) {
+		// TODO: We don't have a way of highlighting so for now we just move cursor there
+		// See https://github.com/Microsoft/vscode/issues/45059
+		editor.selection = new vs.Selection(range.start, range.end);
+		vs.window.showTextDocument(editor.document);
 	}
 
 	private organizeDirectives(editor: vs.TextEditor, editBuilder: vs.TextEditorEdit) {
