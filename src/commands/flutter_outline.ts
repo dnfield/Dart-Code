@@ -22,13 +22,11 @@ export class FlutterOutlineCommands {
 	}
 
 	private applyRefactoring(widget: FlutterWidgetItem, refactorType: string): void {
-		// TODO: The .commands are missing here, see https://github.com/Microsoft/vscode/issues/45124
-		throw Error("The .commands are missing here, see https://github.com/Microsoft/vscode/issues/45124");
-		// const fix = widget.fixes.filter((f) => f.command).find((f) => f.kind.value.endsWith(refactorType));
-		// if (fix) {
-		// 	vs.commands.executeCommand(fix.command.command, fix.command.arguments);
-		// } else {
-		// 	console.error(`Unable to find command for Flutter Outline: ` + refactorType);
-		// }
+		const fix = widget.fixes.filter((f) => f.command).find((f) => f.kind.value.endsWith(refactorType));
+		if (fix) {
+			vs.commands.executeCommand(fix.command.command, ...fix.command.arguments);
+		} else {
+			console.error(`Unable to find command for Flutter Outline: ` + refactorType);
+		}
 	}
 }

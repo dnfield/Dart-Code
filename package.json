@@ -423,31 +423,31 @@
 			],
 			"view/item/context": [
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.center--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.center--.*/",
 					"command": "_flutter.outline.refactor.flutter.wrap.center"
 				},
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.padding--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.padding--.*/",
 					"command": "_flutter.outline.refactor.flutter.wrap.padding"
 				},
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.column--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.column--.*/",
 					"command": "_flutter.outline.refactor.flutter.wrap.column"
 				},
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.wrap.row--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.row--.*/",
 					"command": "_flutter.outline.refactor.flutter.wrap.row"
 				},
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.move.up--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.move\\.up--.*/",
 					"command": "_flutter.outline.refactor.flutter.move.up"
 				},
 				{
-					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.move.down--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.move\\.down--.*/",
 					"command": "_flutter.outline.refactor.flutter.move.down"
 				},
 				{
-					"when": "&& view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor.flutter.removeWidget--.*/",
+					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.removeWidget--.*/",
 					"command": "_flutter.outline.refactor.flutter.removeWidget"
 				}
 			]
