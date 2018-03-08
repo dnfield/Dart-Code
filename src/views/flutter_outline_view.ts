@@ -76,13 +76,11 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 		if (outline) {
 			if (outline.children && outline.length) {
 				for (const c of outline.children) {
-					const pos = editor.document.positionAt(c.offset);
-					const range = new vs.Range(pos, pos);
-					const fixes = (await vs.commands.executeCommand(
-						"vscode.executeCodeActionProvider",
-						editor.document.uri,
-						range,
-					)) as Array<vs.Command | vs.CodeAction>;
+
+					const canHaveFixes = isWidget(c);
+					const fixes = canHaveFixes
+						? await getFixes(editor, c)
+						: [];
 					// Ensure we're still active editor before trying to use.
 					if (editor && editor.document && !editor.document.isClosed) {
 						const codeActionFixes =
@@ -111,6 +109,20 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 	}
 }
 
+function isWidget(outline: as.FlutterOutline) {
+	return outline.kind !== "DART_ELEMENT";
+}
+
+function getFixes(editor: vs.TextEditor, outline: as.FlutterOutline): Thenable<Array<vs.Command | vs.CodeAction>> {
+	const pos = editor.document.positionAt(outline.offset);
+	const range = new vs.Range(pos, pos);
+	return vs.commands.executeCommand(
+		"vscode.executeCodeActionProvider",
+		editor.document.uri,
+		range,
+	);
+}
+
 export class FlutterWidgetItem extends vs.TreeItem {
 	constructor(
 		public readonly outline: as.FlutterOutline,
@@ -120,11 +132,11 @@ export class FlutterWidgetItem extends vs.TreeItem {
 		super(
 			FlutterWidgetItem.getLabel(outline),
 			(outline.children && outline.children.length)
-				? vs.TreeItemCollapsibleState.Collapsed
+				? vs.TreeItemCollapsibleState.Expanded
 				: vs.TreeItemCollapsibleState.None,
 		);
 
-		if (outline.kind !== "DART_ELEMENT") {
+		if (isWidget(outline)) {
 			this.iconPath = path.join(extensionPath, "media/icons/flutter.svg");
 		}
 
@@ -150,6 +162,11 @@ export class FlutterWidgetItem extends vs.TreeItem {
 		if (refactorData) {
 			// So we can search by --ID--
 			this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--.dart";
+		}
+
+		this.tooltip = this.label;
+		if (outline.attributes) {
+			this.tooltip += "\n  " + outline.attributes.map((a) => `${a.name}: ${a.label}`).join("\n   ");
 		}
 	}
 
