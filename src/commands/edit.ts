@@ -23,8 +23,12 @@ export class EditCommands implements vs.Disposable {
 	private highlightRange(editor: vs.TextEditor, range: vs.Range) {
 		// TODO: We don't have a way of highlighting so for now we just move cursor there
 		// See https://github.com/Microsoft/vscode/issues/45059
-		editor.selection = new vs.Selection(range.start, range.end);
 		vs.window.showTextDocument(editor.document);
+		editor.selection = new vs.Selection(range.start, range.end);
+		vs.commands.executeCommand("revealLine", {
+			at: "center",
+			lineNumber: range.start.line,
+		});
 	}
 
 	private organizeDirectives(editor: vs.TextEditor, editBuilder: vs.TextEditorEdit) {
