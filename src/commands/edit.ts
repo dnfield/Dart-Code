@@ -36,6 +36,7 @@ export class EditCommands implements vs.Disposable {
 	}
 
 	private sendEdit(f: (a: { file: string }) => Thenable<{ edit: as.SourceFileEdit }>, commandName: string, editor: vs.TextEditor, editBuilder: vs.TextEditorEdit) {
+		// TODO: We get given an editor, so this isn't needed?
 		if (!editors.hasActiveDartEditor()) {
 			vs.window.showWarningMessage("No active Dart editor.");
 			return;
