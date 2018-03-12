@@ -161,7 +161,7 @@ export class FlutterWidgetItem extends vs.TreeItem {
 			.join("--");
 		if (refactorData) {
 			// So we can search by --ID--
-			this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--.dart";
+			this.contextValue = DART_IS_WIDGET + ":--" + refactorData + "--";
 		}
 
 		this.tooltip = this.label;
