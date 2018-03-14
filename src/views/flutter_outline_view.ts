@@ -140,16 +140,24 @@ export class FlutterWidgetItem extends vs.TreeItem {
 			this.iconPath = path.join(extensionPath, "media/icons/flutter.svg");
 		}
 
-		const location = outline.dartElement && outline.dartElement.location
-			? outline.dartElement.location
-			: outline;
-		const start = editor.document.positionAt(location.offset);
-		// Always use the outline here so we get the "bigger" range
-		const end = editor.document.positionAt(outline.offset + outline.length);
-
 		this.command = {
-			arguments: [editor, new vs.Range(start, end)],
-			command: "_dart.highlightRange",
+			arguments: [
+				editor,
+				// Code to fit on screen
+				new vs.Range(
+					editor.document.positionAt(outline.offset),
+					editor.document.positionAt(outline.offset + outline.length),
+				),
+				// Code to highlight
+				new vs.Range(
+					// TODO: Change to codeOffset/codeLength
+					editor.document.positionAt(outline.offset),
+					editor.document.positionAt(outline.offset + outline.length),
+				),
+				// Cursor position
+				editor.document.positionAt((outline.dartElement ? outline.dartElement.location : outline).offset),
+			],
+			command: "_dart.showCode",
 			title: "",
 		};
 
