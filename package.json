@@ -424,31 +424,38 @@
 			"view/item/context": [
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.center--.*/",
-					"command": "_flutter.outline.refactor.flutter.wrap.center"
+					"command": "_flutter.outline.refactor.flutter.wrap.center",
+					"group": "Refactor@1"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.padding--.*/",
-					"command": "_flutter.outline.refactor.flutter.wrap.padding"
+					"command": "_flutter.outline.refactor.flutter.wrap.padding",
+					"group": "Refactor@2"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.column--.*/",
-					"command": "_flutter.outline.refactor.flutter.wrap.column"
+					"command": "_flutter.outline.refactor.flutter.wrap.column",
+					"group": "Refactor@3"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.wrap\\.row--.*/",
-					"command": "_flutter.outline.refactor.flutter.wrap.row"
+					"command": "_flutter.outline.refactor.flutter.wrap.row",
+					"group": "Refactor@4"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.move\\.up--.*/",
-					"command": "_flutter.outline.refactor.flutter.move.up"
+					"command": "_flutter.outline.refactor.flutter.move.up",
+					"group": "Refactor@5"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.move\\.down--.*/",
-					"command": "_flutter.outline.refactor.flutter.move.down"
+					"command": "_flutter.outline.refactor.flutter.move.down",
+					"group": "Refactor@6"
 				},
 				{
 					"when": "view == dartFlutterOutline && viewItem =~ /dart-code:isWidget:.*--refactor\\.flutter\\.removeWidget--.*/",
-					"command": "_flutter.outline.refactor.flutter.removeWidget"
+					"command": "_flutter.outline.refactor.flutter.removeWidget",
+					"group": "Refactor@7"
 				}
 			]
 		},
