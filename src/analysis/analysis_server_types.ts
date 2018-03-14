@@ -2170,11 +2170,12 @@ export interface FlutterOutlineNotification {
 	outline: FlutterOutline;
 
 	/**
-	 * If the file has Flutter widgets that can be rendered, the list
-	 * of edits that should be applied to the file to instrument widgets and
-	 * associate them with outline nodes.
+	 * If the file has Flutter widgets that can be rendered, this field
+	 * has the instrumented content of the file, that allows associating
+	 * widgets with corresponding outline nodes. If there are no widgets
+	 * to render, this field is absent.
 	 */
-	instrumentationEdits: SourceEdit[];
+	instrumentedCode?: string;
 }
 
 /**
@@ -3955,8 +3956,19 @@ export interface Outline {
 	length: number;
 
 	/**
+	 * The offset of the first character of the element code, which is
+	 * neither documentation, nor annotation.
+	 */
+	codeOffset: number;
+
+	/**
+	 * The length of the element code.
+	 */
+	codeLength: number;
+
+	/**
 	 * The children of the node. The field will be omitted if the node has no
-	 * children.
+	 * children. Children are sorted by offset.
 	 */
 	children?: Outline[];
 }
@@ -4168,4 +4180,3 @@ export interface SourceFileEdit {
 	 */
 	edits: SourceEdit[];
 }
-
