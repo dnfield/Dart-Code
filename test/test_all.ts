@@ -62,7 +62,11 @@ async function runTests(testFolder: string, workspaceFolder: string, sdkPaths: s
 	env.DART_PATH_OVERRIDE = sdkPaths;
 	env.CODE_VERSION = codeVersion;
 	env.DART_CODE_DISABLE_ANALYTICS = true;
-	env.CODE_TESTS_WORKSPACE = path.join(cwd, "test", "test_projects", workspaceFolder);
+	if (path.isAbsolute(workspaceFolder)) {
+		env.CODE_TESTS_WORKSPACE = workspaceFolder;
+	} else {
+		env.CODE_TESTS_WORKSPACE = path.join(cwd, "test", "test_projects", workspaceFolder);
+	}
 	env.CODE_TESTS_PATH = path.join(cwd, "out", "test", testFolder);
 	if (codeVersion === "*")
 		codeVersion = "stable";
@@ -102,12 +106,13 @@ async function runAllTests(): Promise<void> {
 		for (const sdkPath of sdkPaths) {
 			// Allow failures from Insiders because it's often bad (we'll still get reports).
 			const allowFailures = codeVersion === "insiders";
-			const totalRuns = 5 * sdkPaths.length * codeVersions.length;
+			const totalRuns = 6 * sdkPaths.length * codeVersions.length;
 			await runTests("dart_only", "hello_world", sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
 			await runTests("flutter_only", "flutter_hello_world", sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
 			await runTests("multi_root", "projects.code-workspace", sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
 			await runTests("multi_root_upgraded", "", sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
 			await runTests("not_activated/flutter_create", "empty", sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
+			await runTests("flutter_repository", process.env.FLUTTER_ROOT, sdkPath, codeVersion, allowFailures, `${runNumber++} of ${totalRuns}`);
 		}
 	}
 }
