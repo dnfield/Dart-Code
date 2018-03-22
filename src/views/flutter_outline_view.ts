@@ -12,30 +12,43 @@ import { extensionPath } from "../extension";
 const DART_SHOW_FLUTTER_OUTLINE = "dart-code:showFlutterOutline";
 const DART_IS_WIDGET = "dart-code:isWidget";
 
-export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>, vs.Disposable {
+export class FlutterOutlineProvider implements vs.TreeDataProvider<FlutterWidgetItem>, vs.Disposable {
+	private treeView: vs.TreeView<FlutterWidgetItem>;
 	private subscriptions: vs.Disposable[] = [];
 	private analyzer: Analyzer;
 	private activeEditor: vs.TextEditor;
 	private flutterOutline: as.FlutterOutlineNotification;
+	private treeNodesByLine: { [key: number]: FlutterWidgetItem[]; } = [];
 	private updateTimeout: NodeJS.Timer;
 	private onDidChangeTreeDataEmitter: vs.EventEmitter<FlutterWidgetItem | undefined> = new vs.EventEmitter<FlutterWidgetItem | undefined>();
 	public readonly onDidChangeTreeData: vs.Event<FlutterWidgetItem | undefined> = this.onDidChangeTreeDataEmitter.event;
 
 	constructor(analyzer: Analyzer) {
 		this.analyzer = analyzer;
+		// TODO: Should we move this up? It's not really intended to be inside here (tree providers should
+		// be usable for multiple trees).
+		this.treeView = vs.window.createTreeView("flutter_outline_tree", { treeDataProvider: this });
 
 		this.analyzer.registerForFlutterOutline((n) => {
 			if (this.activeEditor && n.file === this.activeEditor.document.fileName) {
 				this.flutterOutline = n;
+				this.treeNodesByLine = [];
 				// Delay this so if we're getting lots of updates we don't flicker.
 				clearTimeout(this.updateTimeout);
-				this.updateTimeout = setTimeout(() => this.update(), 500);
+				this.updateTimeout = setTimeout(() => this.update(), 200);
 			}
 		});
 
 		this.subscriptions.push(vs.window.onDidChangeActiveTextEditor((e) => this.setTrackingFile(e)));
-		if (vs.window.activeTextEditor)
+		if (vs.window.activeTextEditor) {
 			this.setTrackingFile(vs.window.activeTextEditor);
+		}
+
+		this.subscriptions.push(vs.window.onDidChangeTextEditorSelection((e) => {
+			if (e.selections && e.selections.length) {
+				this.highlightNodeAt(e.selections[0].start);
+			}
+		}));
 	}
 
 	private update() {
@@ -60,6 +73,20 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 		}
 	}
 
+	private highlightNodeAt(pos: vs.Position) {
+		if (!this.treeNodesByLine[pos.line])
+			return;
+
+		const offset = this.activeEditor.document.offsetAt(pos);
+		for (const item of this.treeNodesByLine[pos.line]) {
+			if (item.outline.offset < offset
+				&& item.outline.offset + item.outline.length > offset) {
+				this.treeView.reveal(item);
+				return;
+			}
+		}
+	}
+
 	public refresh(): void {
 		this.onDidChangeTreeDataEmitter.fire();
 	}
@@ -68,9 +95,9 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 		return element;
 	}
 
-	public async getChildren(element?: FlutterWidgetItem): Promise<vs.TreeItem[]> {
+	public async getChildren(element?: FlutterWidgetItem): Promise<FlutterWidgetItem[]> {
 		const outline = element ? element.outline : this.flutterOutline ? this.flutterOutline.outline : null;
-		const children: vs.TreeItem[] = [];
+		const children: FlutterWidgetItem[] = [];
 		const editor = this.activeEditor;
 
 		if (outline) {
@@ -87,13 +114,24 @@ export class FlutterOutlineProvider implements vs.TreeDataProvider<vs.TreeItem>,
 							fixes
 								.filter((f): f is vs.CodeAction => f instanceof vs.CodeAction)
 								.filter((ca) => ca.kind && ca.kind.value);
-						children.push(new FlutterWidgetItem(c, codeActionFixes, editor));
+						const node = new FlutterWidgetItem(element, c, codeActionFixes, editor);
+						children.push(node);
+						// Add this node to a lookup by line so we can quickly find it as the user moves around the doc.
+						const line = this.activeEditor.document.positionAt(c.offset).line;
+						if (!this.treeNodesByLine[line]) {
+							this.treeNodesByLine[line] = [];
+						}
+						this.treeNodesByLine[line].push(node);
 					}
 				}
 			}
 		}
 
 		return children;
+	}
+
+	public getParent(element: FlutterWidgetItem): FlutterWidgetItem {
+		return element.parent;
 	}
 
 	private static setTreeVisible(visible: boolean) {
@@ -125,6 +163,7 @@ function getFixes(editor: vs.TextEditor, outline: as.FlutterOutline): Thenable<A
 
 export class FlutterWidgetItem extends vs.TreeItem {
 	constructor(
+		public readonly parent: FlutterWidgetItem,
 		public readonly outline: as.FlutterOutline,
 		public readonly fixes: vs.CodeAction[],
 		editor: vs.TextEditor,
